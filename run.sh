@@ -12,7 +12,7 @@ delay=20
 iperf_port=5001
 
 for qsize in 20 100; do
-    dir=bb-q$qsize
+    dir=reno$qsize
 
     # TODO: Run bufferbloat.py here...
     # python3 ...

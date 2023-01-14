@@ -6,6 +6,7 @@ from mininet.log import lg, info
 from mininet.util import dumpNodeConnections
 from mininet.cli import CLI
 
+from mininet.node import OVSController
 
 from subprocess import Popen, PIPE
 from time import sleep, time
@@ -70,22 +71,26 @@ class BBTopo(Topo):
 
     def build(self):
         # TODO: create two hosts
-        h1 = self.addHost('h1')
-        h2 = self.addHost('h2')
-        
+        h1 = self.addHost( 'h1' )
+        h2 = self.addHost( 'h2' )
+        router = self.addSwitch( 's0', protocols='OpenFlow13')
         # Here I have created a switch.  If you change its name, its
         # interface names will change from s0-eth1 to newname-eth1.
-        switch = self.addSwitch('s0')
-
-        # TODO: Add links with appropriate characteristics
+        # router = self.addSwitch('s0', protocals='OpenFlow13')
 
         bw_host = args.bw_host
         bw_net = args.bw_net
         delay = args.delay
         maxq = args.maxq
-        # Add links
-        self.addLink(h1, switch, bw=bw_host, delay='%sms' % delay, max_queue_size=maxq)
-        self.addLink(switch, h2, bw=bw_net, delay='%sms' % delay, max_queue_size=maxq)
+
+        # TODO: Add links with appropriate characteristics
+        
+        self.addLink( h1, router, bw=bw_host, delay='%sms' %delay, max_queue_size=maxq )
+        self.addLink( h2, router, bw=bw_net, delay='%sms'%delay, max_queue_size=maxq )
+        
+        # # Add links
+        # self.addLink(h1, switch, bw=bw_host, delay='%sms' % delay, max_queue_size=maxq)
+        # self.addLink(h2, switch, bw=bw_net, delay='%sms' % delay, max_queue_size=maxq)
         # self.addLink(h1, h2, bw=bw_host, delay='%sms' % delay, max_queue_size=maxq)
 
 # Simple wrappers around monitoring utilities.  You are welcome to
@@ -147,25 +152,16 @@ def bufferbloat():
         os.makedirs(args.dir)
     os.system("sysctl -w net.ipv4.tcp_congestion_control=%s" % args.cong)
     topo = BBTopo()
-    net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink)
+    net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, controller=OVSController)
     net.start()
     # This dumps the topology and how nodes are interconnected through
     # links.
     dumpNodeConnections(net.hosts)
     # This performs a basic all pairs ping test.
-    h1 = net.get('h1')
-    h2 = net.get('h2')
-    s0 = net.get('s0')
-    print(h1.IP())
-    print(h2.IP())
-    print(s0.IP())
-
-    # h1.cmd( 'iperf -s -u -i 1 > iperf_server.txt &' )
-    # h2.cmd( 'ping', h1.IP(), '-i 0.1 > ping_output.txt &')
-    # h2.cmd( 'iperf -c', h1.IP(), '-u -t 600 > iperf_output.txt &')
+    h1, h2, router = net.get( 'h1', 'h2', 's0' )
+    print(h1.IP(), ' ', h2.IP(), ' ', router.IP())
     
     net.pingAll()
-
     # TODO: Start monitoring the queue sizes.  Since the switch I
     # created is "s0", I monitor one of the interfaces.  Which
     # interface?  The interface numbering starts with 1 and increases.
@@ -216,7 +212,7 @@ def bufferbloat():
 
     print("Writing results...")
     max_q = args.maxq
-    f = open("./results-" + str(max_q) +".txt", "w+")
+    f = open("./" + str(args.cong) + "Results-" + str(max_q) +".txt", "w+")
     numpy_measurements = np.array(measurements)
     f.write("average: %s \n" % np.mean(numpy_measurements))
     f.write("std dev: %s \n" % np.std(numpy_measurements))  
