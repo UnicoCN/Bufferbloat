@@ -6,7 +6,6 @@ from mininet.log import lg, info
 from mininet.util import dumpNodeConnections
 from mininet.cli import CLI
 
-from mininet.node import OVSController
 
 from subprocess import Popen, PIPE
 from time import sleep, time
@@ -69,11 +68,10 @@ args = parser.parse_args()
 class BBTopo(Topo):
     "Simple topology for bufferbloat experiment."
 
-    def build(self, n=2):
+    def build(self):
         # TODO: create two hosts
-        hosts = []
-        for i in range(1, n+1):
-            hosts.append(self.addHost('h%d'%(i)))
+        h1 = self.addHost('h1')
+        h2 = self.addHost('h2')
         
         # Here I have created a switch.  If you change its name, its
         # interface names will change from s0-eth1 to newname-eth1.
@@ -81,17 +79,14 @@ class BBTopo(Topo):
 
         # TODO: Add links with appropriate characteristics
 
-        h1 = hosts[0]
-        h2 = hosts[1]
         bw_host = args.bw_host
         bw_net = args.bw_net
         delay = args.delay
         maxq = args.maxq
-
         # Add links
         self.addLink(h1, switch, bw=bw_host, delay='%sms' % delay, max_queue_size=maxq)
         self.addLink(switch, h2, bw=bw_net, delay='%sms' % delay, max_queue_size=maxq)
-        
+        # self.addLink(h1, h2, bw=bw_host, delay='%sms' % delay, max_queue_size=maxq)
 
 # Simple wrappers around monitoring utilities.  You are welcome to
 # contribute neatly written (using classes) monitoring scripts for
@@ -131,7 +126,7 @@ def start_ping(net):
 
 def start_webserver(net):
     h1 = net.get('h1')
-    proc = h1.popen("python http/webserver.py", shell=True)
+    proc = h1.popen("python3 webserver.py", shell=True)
     sleep(1)
     return [proc]
 
@@ -152,12 +147,23 @@ def bufferbloat():
         os.makedirs(args.dir)
     os.system("sysctl -w net.ipv4.tcp_congestion_control=%s" % args.cong)
     topo = BBTopo()
-    net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink,controller = OVSController)
+    net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink)
     net.start()
     # This dumps the topology and how nodes are interconnected through
     # links.
     dumpNodeConnections(net.hosts)
     # This performs a basic all pairs ping test.
+    h1 = net.get('h1')
+    h2 = net.get('h2')
+    s0 = net.get('s0')
+    print(h1.IP())
+    print(h2.IP())
+    print(s0.IP())
+
+    # h1.cmd( 'iperf -s -u -i 1 > iperf_server.txt &' )
+    # h2.cmd( 'ping', h1.IP(), '-i 0.1 > ping_output.txt &')
+    # h2.cmd( 'iperf -c', h1.IP(), '-u -t 600 > iperf_output.txt &')
+    
     net.pingAll()
 
     # TODO: Start monitoring the queue sizes.  Since the switch I
