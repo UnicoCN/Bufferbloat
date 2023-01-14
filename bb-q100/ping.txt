@@ -779,7 +779,19 @@ From 10.0.0.1 icmp_seq=777 Destination Host Unreachable
 From 10.0.0.1 icmp_seq=778 Destination Host Unreachable
 From 10.0.0.1 icmp_seq=779 Destination Host Unreachable
 From 10.0.0.1 icmp_seq=780 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=781 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=782 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=783 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=784 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=785 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=786 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=787 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=788 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=789 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=790 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=791 Destination Host Unreachable
+From 10.0.0.1 icmp_seq=792 Destination Host Unreachable
 
 --- 10.0.0.2 ping statistics ---
-2000 packets transmitted, 0 received, +780 errors, 100% packet loss, time 331227ms
+2000 packets transmitted, 0 received, +792 errors, 100% packet loss, time 333800ms
 pipe 13
